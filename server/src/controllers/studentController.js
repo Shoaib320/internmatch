@@ -36,9 +36,13 @@ async function createStudentProfile(req, res) {
       profile,
     });
   } catch (error) {
-    return res.status(500).json({
+    const statusCode = error.name === "ValidationError" ? 400 : 500;
+    return res.status(statusCode).json({
       success: false,
-      message: "Failed to create student profile.",
+      message:
+        error.name === "ValidationError"
+          ? "Please check the required profile fields."
+          : "Failed to create student profile.",
       error: process.env.NODE_ENV === "production" ? undefined : error.message,
     });
   }
@@ -109,9 +113,13 @@ async function updateStudentProfile(req, res) {
       profile,
     });
   } catch (error) {
-    return res.status(500).json({
+    const statusCode = error.name === "ValidationError" ? 400 : 500;
+    return res.status(statusCode).json({
       success: false,
-      message: "Failed to update student profile.",
+      message:
+        error.name === "ValidationError"
+          ? "Please check the required profile fields."
+          : "Failed to update student profile.",
       error: process.env.NODE_ENV === "production" ? undefined : error.message,
     });
   }

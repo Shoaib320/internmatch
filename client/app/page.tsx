@@ -9,7 +9,6 @@ import {
   Users, 
   Star,
   CheckCircle2,
-  Sparkles,
   TrendingUp,
   Shield
 } from "lucide-react";
@@ -18,6 +17,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Logo } from "@/components/logo";
 import { BackgroundDecoration } from "@/components/background-decoration";
 import { FloatingIllustration } from "@/components/floating-illustration";
+import { Hero3D } from "@/components/hero-3d";
 
 const features = [
   {
@@ -103,71 +103,7 @@ export default function LandingPage() {
         </div>
       </nav>
 
-      {/* Hero Section */}
-      <section className="relative z-10 py-20 lg:py-32">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            <div className="space-y-8">
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20">
-                <Sparkles className="h-4 w-4 text-primary" />
-                <span className="text-sm font-medium text-primary">AI-Powered Career Matching</span>
-              </div>
-              
-              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-foreground text-balance">
-                Find Your Perfect{" "}
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-secondary to-teal">
-                  Internship
-                </span>{" "}
-                Match
-              </h1>
-              
-              <p className="text-lg text-muted-foreground max-w-xl text-pretty">
-                InternMatch uses advanced machine learning to analyze your profile and connect you with internships that align with your skills, goals, and career aspirations.
-              </p>
-              
-              <div className="flex flex-col sm:flex-row gap-4">
-                <Button size="lg" asChild className="bg-primary hover:bg-primary/90 gap-2">
-                  <Link href="/signup">
-                    Start Your Journey
-                    <ArrowRight className="h-4 w-4" />
-                  </Link>
-                </Button>
-                <Button size="lg" variant="outline" asChild>
-                  <Link href="/signup?role=company">
-                    <Building2 className="h-4 w-4 mr-2" />
-                    For Companies
-                  </Link>
-                </Button>
-              </div>
-              
-              <div className="flex items-center gap-6 pt-4">
-                <div className="flex -space-x-3">
-                  {["SC", "MP", "ER", "JK"].map((initials, i) => (
-                    <div
-                      key={i}
-                      className="h-10 w-10 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-primary-foreground text-xs font-medium border-2 border-background"
-                    >
-                      {initials}
-                    </div>
-                  ))}
-                </div>
-                <div>
-                  <div className="flex items-center gap-1">
-                    {[...Array(5)].map((_, i) => (
-                      <Star key={i} className="h-4 w-4 fill-orange text-orange" />
-                    ))}
-                  </div>
-                  <p className="text-sm text-muted-foreground">Trusted by 10,000+ students</p>
-                </div>
-              </div>
-            </div>
-            
-            <div className="relative hidden lg:block">
-              <FloatingIllustration variant="career" className="w-full max-w-lg mx-auto" />
-            </div>
-          </div>
-        </div>
-      </section>
+      <Hero3D />
 
       {/* Stats Section */}
       <section className="relative z-10 py-16 border-y border-border/50 bg-card/30 backdrop-blur-sm">

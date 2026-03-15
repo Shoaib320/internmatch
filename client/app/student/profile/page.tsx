@@ -109,6 +109,7 @@ const initialForm = {
 export default function StudentProfile() {
   const [activeSection, setActiveSection] = useState("basic")
   const [form, setForm] = useState(initialForm)
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
   const [newSkill, setNewSkill] = useState("")
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -169,6 +170,19 @@ export default function StudentProfile() {
     }))
   }
 
+  function updateField(name: string, value: any) {
+    setForm((current) => ({ ...current, [name]: value }))
+    setFieldErrors((current) => {
+      if (!current[name]) {
+        return current
+      }
+
+      const next = { ...current }
+      delete next[name]
+      return next
+    })
+  }
+
   async function handleSave() {
     const user = getStoredUser()
 
@@ -183,17 +197,38 @@ export default function StudentProfile() {
 
     try {
       const payload = buildProfilePayload(form, userName)
+      const validationErrors = validateProfilePayload(payload)
+
+      if (Object.keys(validationErrors).length) {
+        setFieldErrors(validationErrors)
+        setError(`Please fill these required fields: ${Object.values(validationErrors).join(", ")}.`)
+        return
+      }
+
+      setFieldErrors({})
 
       if (profileExists) {
         await updateStudentProfile(user.id, payload)
       } else {
-        await createStudentProfile(payload)
-        setProfileExists(true)
+        try {
+          await createStudentProfile(payload)
+          setProfileExists(true)
+        } catch (requestError: any) {
+          if (requestError.response?.status === 409) {
+            await updateStudentProfile(user.id, payload)
+            setProfileExists(true)
+          } else {
+            throw requestError
+          }
+        }
       }
 
       setSuccess("Profile saved successfully.")
     } catch (requestError: any) {
-      setError(requestError.response?.data?.message || "Failed to save your profile.")
+      const backendMessage = requestError.response?.data?.message
+      const backendError = requestError.response?.data?.error
+      const requestMessage = requestError.message
+      setError(backendError || backendMessage || requestMessage || "Failed to save your profile.")
     } finally {
       setSaving(false)
     }
@@ -326,19 +361,21 @@ export default function StudentProfile() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="fullName">Full Name</Label>
+                    <Label htmlFor="fullName">Full Name *</Label>
                     <Input
                       id="fullName"
                       value={form.fullName}
-                      onChange={(e) => setForm((current) => ({ ...current, fullName: e.target.value }))}
+                      onChange={(e) => updateField("fullName", e.target.value)}
+                      className={cn(fieldErrors.fullName && "border-destructive focus-visible:ring-destructive")}
                     />
+                    {fieldErrors.fullName ? <p className="text-xs text-destructive">{fieldErrors.fullName} is required.</p> : null}
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="phone">Phone Number</Label>
                     <Input
                       id="phone"
                       value={form.phone}
-                      onChange={(e) => setForm((current) => ({ ...current, phone: e.target.value }))}
+                      onChange={(e) => updateField("phone", e.target.value)}
                     />
                   </div>
                   <div className="space-y-2">
@@ -346,7 +383,7 @@ export default function StudentProfile() {
                     <Input
                       id="collegeName"
                       value={form.collegeName}
-                      onChange={(e) => setForm((current) => ({ ...current, collegeName: e.target.value }))}
+                      onChange={(e) => updateField("collegeName", e.target.value)}
                     />
                   </div>
                   <div className="space-y-2">
@@ -354,7 +391,7 @@ export default function StudentProfile() {
                     <Input
                       id="location"
                       value={form.location}
-                      onChange={(e) => setForm((current) => ({ ...current, location: e.target.value }))}
+                      onChange={(e) => updateField("location", e.target.value)}
                     />
                   </div>
                 </div>
@@ -373,29 +410,33 @@ export default function StudentProfile() {
 
                 <div className="grid md:grid-cols-2 gap-6">
                   <div className="space-y-2">
-                    <Label htmlFor="degree">Degree</Label>
+                    <Label htmlFor="degree">Degree *</Label>
                     <Input
                       id="degree"
                       value={form.degree}
-                      onChange={(e) => setForm((current) => ({ ...current, degree: e.target.value }))}
+                      onChange={(e) => updateField("degree", e.target.value)}
                       placeholder="e.g. B.Tech"
+                      className={cn(fieldErrors.degree && "border-destructive focus-visible:ring-destructive")}
                     />
+                    {fieldErrors.degree ? <p className="text-xs text-destructive">{fieldErrors.degree} is required.</p> : null}
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="branch">Branch / Major</Label>
+                    <Label htmlFor="branch">Branch / Major *</Label>
                     <Input
                       id="branch"
                       value={form.branch}
-                      onChange={(e) => setForm((current) => ({ ...current, branch: e.target.value }))}
+                      onChange={(e) => updateField("branch", e.target.value)}
                       placeholder="e.g. Computer Science"
+                      className={cn(fieldErrors.branch && "border-destructive focus-visible:ring-destructive")}
                     />
+                    {fieldErrors.branch ? <p className="text-xs text-destructive">{fieldErrors.branch} is required.</p> : null}
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="year">Year of Study</Label>
                     <Input
                       id="year"
                       value={form.year}
-                      onChange={(e) => setForm((current) => ({ ...current, year: e.target.value }))}
+                      onChange={(e) => updateField("year", e.target.value)}
                       placeholder="e.g. 3rd Year"
                     />
                   </div>
@@ -404,12 +445,12 @@ export default function StudentProfile() {
                     <Input
                       id="semester"
                       value={form.semester}
-                      onChange={(e) => setForm((current) => ({ ...current, semester: e.target.value }))}
+                      onChange={(e) => updateField("semester", e.target.value)}
                       placeholder="e.g. 6"
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="cgpa">CGPA</Label>
+                    <Label htmlFor="cgpa">CGPA *</Label>
                     <Input
                       id="cgpa"
                       type="number"
@@ -417,18 +458,17 @@ export default function StudentProfile() {
                       min="0"
                       max="10"
                       value={form.cgpa}
-                      onChange={(e) => setForm((current) => ({ ...current, cgpa: e.target.value }))}
+                      onChange={(e) => updateField("cgpa", e.target.value)}
+                      className={cn(fieldErrors.cgpa && "border-destructive focus-visible:ring-destructive")}
                     />
+                    {fieldErrors.cgpa ? <p className="text-xs text-destructive">{fieldErrors.cgpa} is required.</p> : null}
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="experienceLevel">Experience Level</Label>
                     <Select
                       value={form.experienceLevel || "__none"}
                       onValueChange={(value) =>
-                        setForm((current) => ({
-                          ...current,
-                          experienceLevel: value === "__none" ? "" : value,
-                        }))
+                        updateField("experienceLevel", value === "__none" ? "" : value)
                       }
                     >
                       <SelectTrigger>
@@ -514,15 +554,12 @@ export default function StudentProfile() {
                   <div className="grid md:grid-cols-2 gap-6">
                     <div className="space-y-2">
                       <Label htmlFor="preferredRole">Preferred Role</Label>
-                      <Select
-                        value={form.preferredRole || "__none"}
-                        onValueChange={(value) =>
-                          setForm((current) => ({
-                            ...current,
-                            preferredRole: value === "__none" ? "" : value,
-                          }))
-                        }
-                      >
+                    <Select
+                      value={form.preferredRole || "__none"}
+                      onValueChange={(value) =>
+                        updateField("preferredRole", value === "__none" ? "" : value)
+                      }
+                    >
                         <SelectTrigger>
                           <SelectValue placeholder="Select preferred role" />
                         </SelectTrigger>
@@ -538,15 +575,12 @@ export default function StudentProfile() {
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="internshipType">Preferred Work Type</Label>
-                      <Select
-                        value={form.internshipType || "__none"}
-                        onValueChange={(value) =>
-                          setForm((current) => ({
-                            ...current,
-                            internshipType: value === "__none" ? "" : value,
-                          }))
-                        }
-                      >
+                    <Select
+                      value={form.internshipType || "__none"}
+                      onValueChange={(value) =>
+                        updateField("internshipType", value === "__none" ? "" : value)
+                      }
+                    >
                         <SelectTrigger>
                           <SelectValue placeholder="Select work type" />
                         </SelectTrigger>
@@ -565,21 +599,21 @@ export default function StudentProfile() {
                   <div className="grid md:grid-cols-2 gap-6">
                     <div className="space-y-2">
                       <Label htmlFor="preferredLocation">Preferred Location</Label>
-                      <Input
-                        id="preferredLocation"
-                        value={form.preferredLocation}
-                        onChange={(e) => setForm((current) => ({ ...current, preferredLocation: e.target.value }))}
-                        placeholder="e.g. Bangalore or Remote"
-                      />
+                    <Input
+                      id="preferredLocation"
+                      value={form.preferredLocation}
+                      onChange={(e) => updateField("preferredLocation", e.target.value)}
+                      placeholder="e.g. Bangalore or Remote"
+                    />
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="languagesText">Languages Known</Label>
-                      <Input
-                        id="languagesText"
-                        value={form.languagesText}
-                        onChange={(e) => setForm((current) => ({ ...current, languagesText: e.target.value }))}
-                        placeholder="English, Hindi"
-                      />
+                    <Input
+                      id="languagesText"
+                      value={form.languagesText}
+                      onChange={(e) => updateField("languagesText", e.target.value)}
+                      placeholder="English, Hindi"
+                    />
                     </div>
                   </div>
 
@@ -589,7 +623,7 @@ export default function StudentProfile() {
                       id="projectsText"
                       rows={4}
                       value={form.projectsText}
-                      onChange={(e) => setForm((current) => ({ ...current, projectsText: e.target.value }))}
+                      onChange={(e) => updateField("projectsText", e.target.value)}
                       placeholder="Add one project per line"
                     />
                   </div>
@@ -600,7 +634,7 @@ export default function StudentProfile() {
                       id="certificationsText"
                       rows={3}
                       value={form.certificationsText}
-                      onChange={(e) => setForm((current) => ({ ...current, certificationsText: e.target.value }))}
+                      onChange={(e) => updateField("certificationsText", e.target.value)}
                       placeholder="Add one certification per line"
                     />
                   </div>
@@ -624,7 +658,7 @@ export default function StudentProfile() {
                     <Input
                       id="linkedinLink"
                       value={form.linkedinLink}
-                      onChange={(e) => setForm((current) => ({ ...current, linkedinLink: e.target.value }))}
+                      onChange={(e) => updateField("linkedinLink", e.target.value)}
                       placeholder="https://linkedin.com/in/..."
                     />
                   </div>
@@ -633,7 +667,7 @@ export default function StudentProfile() {
                     <Input
                       id="githubLink"
                       value={form.githubLink}
-                      onChange={(e) => setForm((current) => ({ ...current, githubLink: e.target.value }))}
+                      onChange={(e) => updateField("githubLink", e.target.value)}
                       placeholder="https://github.com/..."
                     />
                   </div>
@@ -642,7 +676,7 @@ export default function StudentProfile() {
                     <Input
                       id="portfolioLink"
                       value={form.portfolioLink}
-                      onChange={(e) => setForm((current) => ({ ...current, portfolioLink: e.target.value }))}
+                      onChange={(e) => updateField("portfolioLink", e.target.value)}
                       placeholder="https://your-portfolio.com"
                     />
                   </div>
@@ -750,6 +784,28 @@ function buildProfilePayload(form: typeof initialForm, fallbackName: string) {
     portfolioLink: form.portfolioLink,
     languagesKnown: splitCommaSeparated(form.languagesText),
   }
+}
+
+function validateProfilePayload(payload: ReturnType<typeof buildProfilePayload>) {
+  const errors: Record<string, string> = {}
+
+  if (!String(payload.fullName || "").trim()) {
+    errors.fullName = "Full Name"
+  }
+
+  if (!String(payload.degree || "").trim()) {
+    errors.degree = "Degree"
+  }
+
+  if (!String(payload.branch || "").trim()) {
+    errors.branch = "Branch / Major"
+  }
+
+  if (payload.cgpa === "" || Number.isNaN(Number(payload.cgpa))) {
+    errors.cgpa = "CGPA"
+  }
+
+  return errors
 }
 
 function splitLines(value: string) {
