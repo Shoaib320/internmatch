@@ -2,7 +2,19 @@
 
 InternMatch is an AI-assisted internship recommendation platform built for students, companies, and admins. It helps students discover relevant internships based on their profile, skills, and preferences, while giving companies a clean workspace to post roles and review applicants.
 
-## Highlights
+[![Build](https://img.shields.io/badge/build-local%20build%20passing-brightgreen)](./client)
+![Next.js](https://img.shields.io/badge/Next.js-16-black?logo=next.js)
+![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=white)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-06B6D4?logo=tailwindcss&logoColor=white)
+![Express](https://img.shields.io/badge/Express-000000?logo=express&logoColor=white)
+![MongoDB](https://img.shields.io/badge/MongoDB-47A248?logo=mongodb&logoColor=white)
+![Flask](https://img.shields.io/badge/Flask-000000?logo=flask&logoColor=white)
+
+## Live Demo
+
+Live demo: coming soon
+
+## Features
 
 - ML-powered internship matching
 - Student profile and recommendation flow
@@ -73,6 +85,8 @@ Playground/
 - Internship management
 
 ## Screenshots
+
+These screenshots show the current UI and main user flows of the platform.
 
 ### Landing Page
 
@@ -183,11 +197,10 @@ Then open the frontend URL shown in the client terminal, usually:
 - This repository includes screenshot assets inside `docs/screenshots`
 - This project is currently a working prototype / academic-style full-stack system
 
-## Future Improvements
+## Roadmap
 
-- stronger role-based signup restrictions
-- better validation on backend inputs
-- pagination and filters for admin tables
-- saved internships and internship detail pages
-- persisted ML model artifacts
-- richer PDF export for resumes
+- saved internships and richer internship detail pages
+- improved resume export and template options
+- advanced analytics for companies and admins
+- cloud deployment with a public live demo
+- expanded recommendation models and ranking signals
